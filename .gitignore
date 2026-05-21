@@ -1,0 +1,7 @@
+venv/
+.DS_Store
+__pycache__/
+*.pyc
+debug_output.txt
+diagnostic_report.txt
+raw_network_payloads.json
