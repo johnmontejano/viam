@@ -246,7 +246,7 @@ const ChurchCard = ({ church, isStop, toggleStop, onClick, isSelected, index, is
 };
 
 
-export default function Home() {
+function HomeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
@@ -2831,3 +2831,19 @@ export default function Home() {
     </div>
   );
 }
+
+export default function Home() {
+  return (
+    <React.Suspense fallback={
+      <div className="min-h-screen bg-[#FAF9F6] dark:bg-[#09090b] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-4 border-rose-600 border-t-transparent rounded-full animate-spin"></div>
+          <span className="text-sm font-semibold text-stone-600 dark:text-zinc-400">Loading finder...</span>
+        </div>
+      </div>
+    }>
+      <HomeContent />
+    </React.Suspense>
+  );
+}
+
