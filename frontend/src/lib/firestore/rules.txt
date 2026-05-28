@@ -1,0 +1,106 @@
+// =============================================================================
+// FIRESTORE SECURITY RULES — Reference Document
+// =============================================================================
+// These rules are NOT deployed automatically. Copy and paste them into:
+//   Firebase Console > Firestore Database > Rules tab
+// =============================================================================
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // -------------------------------------------------------------------------
+    // Helper functions
+    // -------------------------------------------------------------------------
+
+    // Check if the request is from an authenticated user
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Get the requesting user's profile document
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    // Check if the requesting user has a specific role
+    function hasRole(role) {
+      return isAuthenticated() && getUserData().role == role;
+    }
+
+    // Check if the requesting user is any kind of admin
+    function isAdmin() {
+      return isAuthenticated()
+        && getUserData().role in ['master_admin', 'local_admin'];
+    }
+
+    // Check if the requesting user is a master admin
+    function isMasterAdmin() {
+      return hasRole('master_admin');
+    }
+
+    // -------------------------------------------------------------------------
+    // Events collection
+    // -------------------------------------------------------------------------
+    match /events/{eventId} {
+
+      // Anyone (including unauthenticated guests) can read approved events
+      allow read: if resource.data.status == 'approved';
+
+      // Admins can read any event (pending, rejected, etc.)
+      allow read: if isAdmin();
+
+      // Authenticated users can submit new events with status 'pending'
+      allow create: if isAuthenticated()
+        && request.resource.data.status == 'pending'
+        && request.resource.data.submittedBy == request.auth.uid;
+
+      // Admins can update event status (moderation)
+      allow update: if isAdmin();
+
+      // The original submitter can update their own pending event
+      allow update: if isAuthenticated()
+        && resource.data.submittedBy == request.auth.uid
+        && resource.data.status == 'pending';
+
+      // Admins can delete events
+      allow delete: if isAdmin();
+    }
+
+    // -------------------------------------------------------------------------
+    // Users collection
+    // -------------------------------------------------------------------------
+    match /users/{userId} {
+
+      // Users can read their own profile
+      allow read: if isAuthenticated() && request.auth.uid == userId;
+
+      // Admins can read any user profile (for admin dashboards)
+      allow read: if isAdmin();
+
+      // Users can create their own profile
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+
+      // Users can update their own document (saved items, RSVPs, display name)
+      // BUT cannot change their own role
+      allow update: if isAuthenticated()
+        && request.auth.uid == userId
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']));
+
+      // Only master_admin can update another user's role
+      allow update: if isMasterAdmin()
+        && request.auth.uid != userId;
+
+      // Deny delete — user profiles should not be deleted through client SDK
+      allow delete: if false;
+    }
+
+    // -------------------------------------------------------------------------
+    // Default: deny all other access
+    // -------------------------------------------------------------------------
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

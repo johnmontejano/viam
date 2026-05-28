@@ -7,16 +7,17 @@ interface AISearchBarProps {
   loadingMessage?: string;
   className?: string;
   compact?: boolean;
+  discoveryLayer?: "masses" | "events";
 }
 
-const DEFAULT_SUGGESTIONS = [
+const MASS_DEFAULT_SUGGESTIONS = [
   "TLM near me",
   "FSSP churches near San Francisco",
   "San Francisco to Los Angeles this Sunday",
   "Nearest SSPX chapel",
 ];
 
-const EXPANDED_SUGGESTIONS = [
+const MASS_EXPANDED_SUGGESTIONS = [
   "ICKSP near me",
   "Sunday Mass nearby",
   "Latin Mass near Los Angeles",
@@ -25,7 +26,23 @@ const EXPANDED_SUGGESTIONS = [
   "Latin Mass within 50 miles",
 ];
 
-export function AISearchBar({ onSearch, isLoading = false, loadingMessage = "Thinking...", className = "", compact = false }: AISearchBarProps) {
+const EVENT_DEFAULT_SUGGESTIONS = [
+  "Catholic events near me",
+  "Young adult events in San Francisco",
+  "Rosary nights nearby",
+  "Events this weekend",
+];
+
+const EVENT_EXPANDED_SUGGESTIONS = [
+  "Dancing events near me",
+  "Formation talks this month",
+  "Catholic events in Los Angeles",
+  "Feast day events in San Jose",
+  "Men's group theology talks",
+  "Rosary hikes Carmel",
+];
+
+export function AISearchBar({ onSearch, isLoading = false, loadingMessage = "Thinking...", className = "", compact = false, discoveryLayer = "masses" }: AISearchBarProps) {
   const [query, setQuery] = useState("");
   const [isFocused, setIsFocused] = useState(false);
   const [showMore, setShowMore] = useState(false);
@@ -47,7 +64,10 @@ export function AISearchBar({ onSearch, isLoading = false, loadingMessage = "Thi
     onSearch(suggestion);
   };
 
-  const suggestions = showMore ? [...DEFAULT_SUGGESTIONS, ...EXPANDED_SUGGESTIONS] : DEFAULT_SUGGESTIONS;
+  const isEvents = discoveryLayer === "events";
+  const defaultSugs = isEvents ? EVENT_DEFAULT_SUGGESTIONS : MASS_DEFAULT_SUGGESTIONS;
+  const expSugs = isEvents ? EVENT_EXPANDED_SUGGESTIONS : MASS_EXPANDED_SUGGESTIONS;
+  const suggestions = showMore ? [...defaultSugs, ...expSugs] : defaultSugs;
 
   return (
     <div className={`w-full mx-auto ${compact ? '' : 'max-w-3xl'} ${className}`}>
@@ -75,7 +95,15 @@ export function AISearchBar({ onSearch, isLoading = false, loadingMessage = "Thi
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
-          placeholder={isLoading ? loadingMessage : compact ? "Search location..." : "Ask anything: 'TLM near me' or 'Nashville to San Francisco'..."}
+          placeholder={
+            isLoading 
+              ? loadingMessage 
+              : compact 
+              ? "Search location..." 
+              : isEvents 
+              ? "Search events: 'Young adult events near me' or 'Rosary night in San Francisco'..." 
+              : "Ask anything: 'TLM near me' or 'Nashville to San Francisco'..."
+          }
           className={`flex-1 px-2.5 focus:outline-none bg-transparent placeholder-stone-400 dark:placeholder-zinc-500 text-stone-900 dark:text-white font-medium z-10 relative ${
             compact ? 'py-1.5 text-sm' : 'py-3.5 text-base md:text-lg'
           } ${isLoading ? 'opacity-40 pointer-events-none' : ''}`}

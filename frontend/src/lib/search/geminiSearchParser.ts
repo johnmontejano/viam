@@ -1,17 +1,19 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { ParsedSearchIntent } from "@/types/searchIntent";
 
-const SYSTEM_PROMPT = `You are a search intent parser for Viam, a Traditional Latin Mass (TLM) finder app.
+const SYSTEM_PROMPT = `You are a search intent parser for Viam, a Traditional Catholic discovery app featuring both a Latin Mass finder and a Community Events discovery layer.
 Given a user's natural language query, extract the search intent and return ONLY a valid JSON object.
 Do NOT include markdown, code blocks, or any text outside the JSON.
 
 JSON fields:
 {
   "intent": "route_search" | "city_search" | "nearby_search" | "category_search" | "unknown",
+  "discoveryLayer": "masses" | "events",
   "origin": string or null,
   "destination": string or null,
   "location": string or null,
   "categories": string[] or null,
+  "eventCategory": string or null,
   "radiusMiles": number or null,
   "useCurrentLocation": boolean,
   "clarificationNeeded": boolean,
@@ -24,6 +26,12 @@ JSON fields:
   "originCoords": { "lat": number, "lon": number } or null,
   "destinationCoords": { "lat": number, "lon": number } or null
 }
+
+## DISCOVERY LAYER ROUTING RULES (CRITICAL):
+- default "discoveryLayer" is "masses".
+- You MUST set "discoveryLayer" to "masses" if the user query is looking for Latin Mass times, traditional parishes, chapels, FSSP/SSPX/ICKSP locations, or TLM finder route searches. Examples: "TLM near me", "FSSP in SF", "SSPX chapel near LA", "Latin Mass times".
+- You MUST set "discoveryLayer" to "events" if the user query is looking for community activities, socials, rosaries, lectures, classes, hikes, dances, feeds, groups, processions, feasts, or fundraisers. Examples: "young adult events near me", "Catholic events this weekend", "rosary night in SF", "hiking events nearby", "swing dancing in LA".
+- If the query is ambiguous and could refer to both Masses AND events, or if the intent is completely unclear, you MUST set clarificationNeeded=true, and set clarificationQuestion="Are you looking for Masses or events?".
 
 ## DISAMBIGUATION RULES (VERY IMPORTANT):
 You MUST set clarificationNeeded=true when a place name could reasonably refer to more than one major location. Common cases:
@@ -38,13 +46,13 @@ You MUST set clarificationNeeded=true when a place name could reasonably refer t
 When the route context is international (e.g., going "to Mexico" or "to [foreign city]"), be extra aggressive about asking for clarification on ambiguous origin/destination cities.
 
 ## GENERAL RULES:
-- NEVER invent church names, Mass times, or addresses
+- NEVER invent church/event names, times, or addresses
 - Conversational queries like "I'm going to [location]", "going to [location]", "heading to [location]", "traveling to [location]" where there is NO explicit starting point/origin specified are SINGLE-LOCATION searches, NOT route searches. Set intent="city_search" and location="[location]". Do NOT set origin or destination.
 - For route queries: intent="route_search", extract origin and destination
 - For city queries: intent="city_search", location = city
 - "near me" / "around me" / "nearby": useCurrentLocation=true, intent="nearby_search"
 - "mess" as typo for "mass" = seeking Mass locations
-- FSSP, SSPX, ICKSP, Diocesan = categories
+- FSSP, SSPX, ICKSP, Diocesan = categories (in masses mode)
 - Only set radiusMiles if user explicitly states a distance
 - displaySummary = short clean phrase, no markdown
 - Format US cities as "City, State" (e.g. "San Francisco, CA")
@@ -92,5 +100,7 @@ export async function geminiSearchParser(query: string): Promise<ParsedSearchInt
     locationCoords: parsed.locationCoords || undefined,
     originCoords: parsed.originCoords || undefined,
     destinationCoords: parsed.destinationCoords || undefined,
+    discoveryLayer: parsed.discoveryLayer || "masses",
+    eventCategory: parsed.eventCategory || undefined,
   } as ParsedSearchIntent;
 }

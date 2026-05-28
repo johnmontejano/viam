@@ -3,10 +3,13 @@ import { ParsedSearchIntent, ChurchCategory, DayOfWeek } from "@/types/searchInt
 export function parseNaturalLanguageSearch(query: string): ParsedSearchIntent {
   const lowerQuery = query.toLowerCase();
   
+  const isEventQuery = /(?:event|social|rosary|dinner|danc|hike|hiking|group|class|formation|philosoph|theolog|feast|procession|conference|fundraiser|volunteer|charity|gathering|meetup|fellowship)/i.test(lowerQuery);
+
   const result: ParsedSearchIntent = {
     intent: "unknown",
     confidence: 0,
     displaySummary: "",
+    discoveryLayer: isEventQuery ? "events" : "masses",
   };
 
   // 1. Detect Categories

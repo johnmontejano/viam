@@ -26,4 +26,6 @@ export interface ParsedSearchIntent {
   locationCoords?: { lat: number; lon: number };
   originCoords?: { lat: number; lon: number };
   destinationCoords?: { lat: number; lon: number };
+  discoveryLayer?: "masses" | "events";
+  eventCategory?: string;
 }

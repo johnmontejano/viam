@@ -1,8 +1,15 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-interface ChurchSummaryInput {
-  church_name: string;
-  category_normalized: string;
+interface ResultsSummaryInput {
+  // Church properties
+  church_name?: string;
+  category_normalized?: string;
+  
+  // Event properties
+  title?: string;
+  category?: string;
+
+  // Shared properties
   distanceFromOrigin?: number;
   distanceFromRoute?: number;
   address?: string;
@@ -10,32 +17,55 @@ interface ChurchSummaryInput {
 }
 
 export async function generateResultsSummary(
-  churches: ChurchSummaryInput[],
+  items: ResultsSummaryInput[],
   searchContext: string,
-  totalCount: number
+  totalCount: number,
+  mode: "masses" | "events" = "masses"
 ): Promise<string> {
   const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-  if (!apiKey || churches.length === 0) return "";
+  if (!apiKey || items.length === 0) return "";
 
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-  const top5 = churches.slice(0, 5).map((c) => ({
-    name: c.church_name,
-    type: c.category_normalized,
-    distance: c.distanceFromOrigin != null
-      ? `${c.distanceFromOrigin.toFixed(1)} miles away`
-      : c.distanceFromRoute != null
-      ? `${c.distanceFromRoute.toFixed(1)} miles from route`
-      : "distance unknown",
-    location: c.city || c.address || "",
-  }));
+  const top5 = items.slice(0, 5).map((item) => {
+    const name = item.church_name || item.title || "";
+    const type = item.category_normalized || item.category || "";
+    const dist = item.distanceFromOrigin != null
+      ? `${item.distanceFromOrigin.toFixed(1)} miles away`
+      : item.distanceFromRoute != null
+      ? `${item.distanceFromRoute.toFixed(1)} miles from route`
+      : "distance unknown";
+    return {
+      name,
+      type,
+      distance: dist,
+      location: item.city || item.address || "",
+    };
+  });
 
-  const prompt = `You help users find Traditional Latin Mass (TLM) locations through the app Viam.
-Based on these search results, write a friendly, warm 1-2 sentence summary for the user. 
+  const isEvents = mode === "events";
+  const prompt = isEvents 
+    ? `You help users find Traditional Catholic community events through the app Viam.
+Based on these event search results, write a friendly, warm 1-2 sentence summary for the user. 
+Be specific and mention the closest event and category. Sound helpful, not robotic.
+
+Search Query: "${searchContext}"
+Total events found: ${totalCount}
+Top results:
+${JSON.stringify(top5, null, 2)}
+
+Rules:
+- Do NOT use markdown or bullet points
+- Keep it to 1-2 sentences
+- Be warm and encouraging
+- Mention the closest event by name if possible and how far it is
+- Example: "Great news! I found 5 events near San Francisco, with the closest being a Young Adult Social just 2.4 miles away at Star of the Sea Parish."`
+    : `You help users find Traditional Latin Mass (TLM) locations through the app Viam.
+Based on these Mass search results, write a friendly, warm 1-2 sentence summary for the user. 
 Be specific and mention the closest church and category. Sound helpful, not robotic.
 
-Search: "${searchContext}"
+Search Query: "${searchContext}"
 Total results found: ${totalCount}
 Top results:
 ${JSON.stringify(top5, null, 2)}
