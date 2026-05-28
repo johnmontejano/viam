@@ -199,12 +199,12 @@ export function EventDetailModal({
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 md:p-6 lg:p-8 bg-zinc-950/80 backdrop-blur-md"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 md:p-6 lg:p-8 bg-foreground/60 backdrop-blur-md"
       onClick={onClose}
     >
       {/* Immersive modal card with balanced height and responsive structural stabilization */}
       <div
-        className={`w-full max-w-4xl bg-[#faf8f2] dark:bg-zinc-950 border border-stone-250/70 dark:border-zinc-900 rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden shadow-2xl relative drawer-slide-up flex flex-col text-stone-900 dark:text-zinc-100 h-full max-h-[85vh] md:max-h-[80vh] lg:max-h-[85vh] ${theme.accentRing} ring-1`}
+        className={`w-full max-w-4xl bg-card border border-border rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden shadow-2xl relative drawer-slide-up flex flex-col text-foreground h-full max-h-[85vh] md:max-h-[80vh] lg:max-h-[85vh] ${theme.accentRing} ring-1`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Dynamic color visual aura background */}
@@ -212,18 +212,18 @@ export function EventDetailModal({
         <div className={`absolute -top-40 -right-40 w-96 h-96 rounded-full bg-gradient-to-bl filter blur-[100px] pointer-events-none opacity-40 ${theme.glow}`} />
 
         {/* 1. Permanent Sticky Header (Anchored Close Button keeps layout clean) */}
-        <div className="sticky top-0 z-45 w-full flex items-center justify-between px-5 sm:px-6 py-4 bg-[#faf8f2]/90 dark:bg-zinc-950/85 backdrop-blur-md border-b border-stone-200/50 dark:border-zinc-900 shrink-0">
+        <div className="sticky top-0 z-45 w-full flex items-center justify-between px-5 sm:px-6 py-4 bg-card/90 backdrop-blur-md border-b border-border shrink-0">
           <div className="flex items-center gap-2 min-w-0">
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] bg-stone-150 dark:bg-zinc-900 text-stone-600 dark:text-zinc-400 px-2.5 py-1 rounded border border-stone-200 dark:border-zinc-800 shrink-0">
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] bg-muted text-muted-foreground px-2.5 py-1 rounded border border-border shrink-0">
               Event Details
             </span>
-            <span className="text-[9px] font-black uppercase tracking-[0.15em] text-[#7a1c31] dark:text-[#f472b6] animate-pulse truncate">
-              • Live Registry
+            <span className="text-[9px] font-black uppercase tracking-[0.15em] text-primary animate-pulse truncate">
+              Live Registry
             </span>
           </div>
           <button
             onClick={onClose}
-            className="p-2 bg-stone-100/60 dark:bg-zinc-900/60 hover:bg-stone-200 dark:hover:bg-zinc-800 text-stone-600 dark:text-zinc-350 border border-stone-200 dark:border-white/5 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-[#7a1c31]/20 shrink-0"
+            className="p-2 bg-muted hover:bg-secondary text-muted-foreground border border-border rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-primary/20 shrink-0"
             aria-label="Close modal"
           >
             <X className="w-5 h-5" />
@@ -234,7 +234,7 @@ export function EventDetailModal({
         <div className="overflow-y-auto custom-scrollbar flex-1 flex flex-col pb-16 lg:pb-0">
           
           {/* Cover Photo Block */}
-          <div className="w-full h-44 sm:h-56 md:h-64 lg:h-72 overflow-hidden bg-stone-50 dark:bg-zinc-900/50 relative border-b border-stone-200/60 dark:border-zinc-900/60 shrink-0 select-none">
+          <div className="w-full h-44 sm:h-56 md:h-64 lg:h-72 overflow-hidden bg-muted relative border-b border-border shrink-0 select-none">
             {event.imageUrl && !imageFailed ? (
               <>
                 <img
@@ -269,7 +269,7 @@ export function EventDetailModal({
           <div className="p-5 sm:p-7 md:p-8 lg:p-10 flex flex-col gap-8">
             
             {/* Title Section (Below hero to completely prevent absolute overlay text collisions) */}
-            <div className="text-left border-b border-stone-200/60 dark:border-zinc-900 pb-6">
+            <div className="text-left border-b border-border pb-6">
               <div className="flex flex-wrap items-center gap-2 mb-3.5">
                 <span 
                   className="text-[10px] font-black uppercase tracking-[0.18em] px-3.5 py-1 rounded-full border shadow-sm transition-all duration-300"
@@ -293,7 +293,7 @@ export function EventDetailModal({
                 )}
               </div>
 
-              <h2 className="font-serif font-extrabold text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-stone-900 dark:text-white tracking-tight leading-tight max-w-3xl">
+              <h2 className="font-display font-semibold text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-foreground tracking-tight leading-tight max-w-3xl">
                 {event.title}
               </h2>
             </div>

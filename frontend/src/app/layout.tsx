@@ -1,22 +1,10 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
 import "./globals.css";
 import { AuthProviderWrapper } from "./AuthProviderWrapper";
 
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
-});
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
-});
-
 export const metadata: Metadata = {
-  title: "Viam — AI-Powered Traditional Latin Mass Finder",
-  description: "Find Traditional Latin Masses near you or along your route with AI-powered search, smart filters, and interactive maps.",
+  title: "Viam — Discover Catholic Events & the Traditional Latin Mass",
+  description: "Find local Catholic events, meet young Catholics, and discover the Traditional Latin Mass near you or along your route.",
   metadataBase: new URL("https://viamtrad.netlify.app"),
   alternates: {
     canonical: "/",
@@ -29,8 +17,8 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
-    title: "Viam — AI-Powered Traditional Latin Mass Finder",
-    description: "Find Traditional Latin Masses near you or along your route with AI-powered search, smart filters, and interactive maps.",
+    title: "Viam — Discover Catholic Events & the Traditional Latin Mass",
+    description: "Find local Catholic events, meet young Catholics, and discover the Traditional Latin Mass near you or along your route.",
     url: "https://viamtrad.netlify.app",
     siteName: "Viam",
     images: [
@@ -38,14 +26,14 @@ export const metadata: Metadata = {
         url: "https://i.postimg.cc/KvbByNYv/Captura-de-pantalla-2026-05-18-a-la-s-9-20-48-p-m.png",
         width: 1200,
         height: 630,
-        alt: "Viam — AI-Powered Traditional Latin Mass Finder Preview",
+        alt: "Viam — Discover Catholic Events & the Traditional Latin Mass",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Viam — AI-Powered Traditional Latin Mass Finder",
-    description: "Find Traditional Latin Masses near you or along your route with AI-powered search, smart filters, and interactive maps.",
+    title: "Viam — Discover Catholic Events & the Traditional Latin Mass",
+    description: "Find local Catholic events, meet young Catholics, and discover the Traditional Latin Mass near you or along your route.",
     images: ["https://i.postimg.cc/KvbByNYv/Captura-de-pantalla-2026-05-18-a-la-s-9-20-48-p-m.png"],
   },
   icons: {
@@ -56,7 +44,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport = {
-  themeColor: "#9f1239", // Burgundy Accent
+  themeColor: "#8B1538",
   width: "device-width",
   initialScale: 1,
 };
@@ -67,10 +55,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+    <html lang="en" className="bg-background">
+      <body className="font-sans antialiased">
         <AuthProviderWrapper>
           {children}
         </AuthProviderWrapper>
@@ -78,4 +64,3 @@ export default function RootLayout({
     </html>
   );
 }
-

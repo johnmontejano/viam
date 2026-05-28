@@ -1293,7 +1293,7 @@ function HomeContent() {
   const displayedData = processedData.slice(0, 50);
 
   return (
-    <div className={`flex flex-col h-[100dvh] overflow-hidden relative transition-colors duration-300 ${theme === 'dark' ? 'dark bg-zinc-950 text-zinc-200' : 'bg-stone-50 text-stone-900'}`}>
+    <div className={`flex flex-col h-[100dvh] overflow-hidden relative transition-colors duration-300 ${theme === 'dark' ? 'dark bg-background text-foreground' : 'bg-background text-foreground'}`}>
       {showDebug && (
         <div className="fixed bottom-4 left-4 bg-black/80 text-white text-xs p-3 rounded-lg z-[9999] font-mono pointer-events-none">
           <div>Auth Debug:</div>
@@ -1426,18 +1426,20 @@ function HomeContent() {
       )}
       <header className={`z-20 px-4 md:px-6 transition-all duration-500 flex flex-col items-center relative ${
         hasSearched 
-          ? 'flex-none border-b border-stone-200 dark:border-white/5 shadow-[0_4px_30px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_30px_rgba(0,0,0,0.4)] py-3.5 bg-white/75 dark:bg-zinc-900/75 backdrop-blur-xl w-full' 
+          ? 'flex-none border-b border-border shadow-card py-3.5 bg-card/80 backdrop-blur-xl w-full' 
           : 'flex-1 overflow-y-auto w-full h-full pt-12 pb-16 custom-scrollbar bg-transparent'
       }`}>
         
         {!hasSearched ? (
           <div className="w-full max-w-3xl my-auto flex flex-col items-center py-6 relative">
             {/* Glowing Ambient Background Orb */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] rounded-full viam-glow-orb pulse-glow-bg z-0" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full bg-primary/5 blur-3xl z-0" />
             
-            <div className="text-center mb-8 hero-animate relative z-10">
-              <h1 className="text-6xl font-serif font-bold tracking-tight mb-4 text-transparent bg-clip-text bg-gradient-to-b from-stone-900 via-stone-850 to-rose-600 dark:from-white dark:via-zinc-100 dark:to-rose-500 drop-shadow-[0_4px_30px_rgba(190,18,60,0.25)]">Viam</h1>
-              <p className="text-lg text-stone-600 dark:text-zinc-400 font-medium">Find the Traditional Latin Mass near you or along your route.</p>
+          <div className="text-center mb-8 hero-animate relative z-10">
+              <h1 className="font-display text-5xl md:text-6xl font-semibold tracking-tight mb-4 text-foreground">Viam</h1>
+              <p className="text-lg md:text-xl text-muted-foreground font-medium max-w-lg mx-auto text-balance">
+                Discover Catholic events and the Traditional Latin Mass near you.
+              </p>
             </div>
             
             <DiscoveryLayerToggle 

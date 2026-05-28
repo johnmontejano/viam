@@ -1,6 +1,8 @@
+"use client";
+
 import React, { useState } from "react";
 import { CatholicEvent } from "@/types/event";
-import { Calendar, MapPin, Share2, CornerUpRight, Plus, Check, Clock, User, Heart } from "lucide-react";
+import { Calendar, MapPin, Users, Heart, ExternalLink } from "lucide-react";
 import { FallbackCover } from "./FallbackCover";
 
 interface EventCardProps {
@@ -15,11 +17,20 @@ interface EventCardProps {
   index: number;
 }
 
-export function EventCard({ event, isSaved, onToggleSave, isRsvpd, onToggleRsvp, onClick, onShowDetails, isSelected, index }: EventCardProps) {
+export function EventCard({
+  event,
+  isSaved,
+  onToggleSave,
+  isRsvpd,
+  onToggleRsvp,
+  onClick,
+  onShowDetails,
+  isSelected,
+  index,
+}: EventCardProps) {
   const [imageFailed, setImageFailed] = useState(false);
-  const delay = Math.min(index * 0.04, 0.4);
+  const delay = Math.min(index * 0.05, 0.5);
 
-  // Format Date and Time
   const formatDate = (isoString: string) => {
     const d = new Date(isoString);
     return d.toLocaleDateString("en-US", {
@@ -37,137 +48,140 @@ export function EventCard({ event, isSaved, onToggleSave, isRsvpd, onToggleRsvp,
     });
   };
 
-  // Google Calendar URL Generator
-  const getGoogleCalendarUrl = (e: CatholicEvent) => {
-    const start = new Date(e.startDateTime).toISOString().replace(/-|:|\.\d\d\d/g, "");
-    const end = e.endDateTime 
-      ? new Date(e.endDateTime).toISOString().replace(/-|:|\.\d\d\d/g, "")
-      : new Date(new Date(e.startDateTime).getTime() + 2 * 60 * 60 * 1000).toISOString().replace(/-|:|\.\d\d\d/g, "");
-    
-    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(e.title)}&dates=${start}/${end}&details=${encodeURIComponent(e.description || "")}&location=${encodeURIComponent((e.locationName ? e.locationName + ", " : "") + e.address + ", " + (e.city || ""))}`;
-  };
-
-  // Share Event Trigger
-  const handleShare = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (navigator.share) {
-      navigator.share({
-        title: event.title,
-        text: event.description,
-        url: window.location.href,
-      }).catch(() => {});
-    } else {
-      navigator.clipboard.writeText(`${event.title} - ${formatDate(event.startDateTime)} at ${event.locationName || event.address}. Details inside Viam.`);
-      alert("Event details copied to clipboard!");
-    }
-  };
-
   return (
-    <div
+    <article
       id={`event-card-${event.id}`}
-      className={`rounded-2xl border cursor-pointer group relative shrink-0 card-animate overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+      className={`group relative flex flex-col bg-card rounded-2xl border overflow-hidden cursor-pointer transition-all duration-300 hover-lift ${
         isSelected
-          ? "neural-glass-card-active border-rose-500/45 shadow-[0_0_30px_rgba(190,18,60,0.18)] scale-[1.015]"
-          : "neural-glass-card border-stone-200 dark:border-white/5 shadow-[0_4px_12px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_12px_rgba(0,0,0,0.2)] hover:border-rose-500/30 hover:bg-stone-100 dark:hover:bg-zinc-900/60 hover:shadow-[0_12px_30px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_12px_30px_rgba(0,0,0,0.4)] hover:scale-[1.01]"
+          ? "border-primary/40 shadow-glow ring-2 ring-primary/10"
+          : "border-border hover:border-primary/20"
       }`}
       style={{ animationDelay: `${delay}s` }}
       onClick={onClick}
     >
-      <div className="w-full h-28 md:h-32 overflow-hidden bg-stone-100 dark:bg-zinc-950/40 border-b border-stone-200 dark:border-white/5 relative shrink-0">
+      {/* Image */}
+      <div className="relative aspect-[16/10] overflow-hidden bg-muted">
         {event.imageUrl && !imageFailed ? (
           <img
             src={event.imageUrl}
             alt={event.title}
-            className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             loading="lazy"
             onError={(e) => {
               const img = e.target as HTMLImageElement;
               if (img.src && !img.src.includes("api.codetabs.com")) {
-                img.src = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(event.imageUrl!)}`;
+                img.src = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(
+                  event.imageUrl!
+                )}`;
               } else {
                 setImageFailed(true);
               }
             }}
           />
         ) : (
-          <FallbackCover category={event.category} title={event.title} themeColor={event.themeColor} />
+          <FallbackCover
+            category={event.category}
+            title={event.title}
+            themeColor={event.themeColor}
+          />
         )}
+
+        {/* Save Button */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleSave(e);
+          }}
+          className={`absolute top-3 right-3 p-2 rounded-full backdrop-blur-sm transition-all duration-200 ${
+            isSaved
+              ? "bg-primary text-primary-foreground"
+              : "bg-black/30 text-white hover:bg-black/50"
+          }`}
+          title={isSaved ? "Saved" : "Save Event"}
+        >
+          <Heart className={`w-4 h-4 ${isSaved ? "fill-current" : ""}`} />
+        </button>
+
+        {/* Category Badge */}
+        <div className="absolute bottom-3 left-3 flex gap-1.5">
+          <span className="px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide bg-black/60 text-white rounded-md backdrop-blur-sm">
+            {event.category}
+          </span>
+          {event.verified && (
+            <span className="px-2 py-1 text-[11px] font-semibold uppercase tracking-wide bg-success/90 text-success-foreground rounded-md">
+              Verified
+            </span>
+          )}
+        </div>
       </div>
 
-      <div className="p-4 flex flex-col gap-3">
-        <div>
-          <div className="flex items-start justify-between gap-2">
-            <h3 className="font-bold text-lg leading-tight text-stone-900 dark:text-white group-hover:text-rose-900 dark:group-hover:text-rose-100 transition-colors duration-300">
-              {event.title}
-            </h3>
-            <button
-              onClick={onToggleSave}
-              className={`shrink-0 p-1.5 rounded-full border transition-all duration-200 ${
-                isSaved
-                  ? "bg-rose-100 dark:bg-rose-950/50 text-rose-700 dark:text-rose-400 border-rose-300 dark:border-rose-800/35 hover:bg-rose-200 dark:hover:bg-rose-900/50 scale-110"
-                  : "bg-stone-100 dark:bg-zinc-800/60 text-stone-500 dark:text-zinc-400 border-stone-200 dark:border-white/5 hover:bg-stone-200 dark:hover:bg-zinc-700/60 hover:text-stone-750"
-              }`}
-              title={isSaved ? "Saved" : "Save Event"}
-            >
-              <Heart className={`w-4 h-4 ${isSaved ? "fill-rose-600 dark:fill-rose-500" : ""}`} />
-            </button>
-          </div>
+      {/* Content */}
+      <div className="flex flex-col flex-1 p-4">
+        {/* Title & Host */}
+        <h3 className="font-display text-xl font-semibold text-foreground leading-tight line-clamp-2 group-hover:text-primary transition-colors">
+          {event.title}
+        </h3>
 
-          <div className="flex flex-wrap items-center gap-1.5 mt-2">
-            <span className="text-[9px] uppercase tracking-wider bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-900/30 px-2 py-0.5 rounded-md font-bold">
-              {event.category}
+        {event.hostName && (
+          <p className="mt-1 text-sm text-muted-foreground">
+            Hosted by {event.hostName}
+          </p>
+        )}
+
+        {/* Details */}
+        <div className="mt-3 space-y-2">
+          <div className="flex items-center gap-2 text-sm text-foreground">
+            <Calendar className="w-4 h-4 text-primary shrink-0" />
+            <span className="font-medium">
+              {formatDate(event.startDateTime)} at {formatTime(event.startDateTime)}
             </span>
-            {event.verified && (
-              <span className="text-[9px] uppercase tracking-wider bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/30 px-2 py-0.5 rounded-md font-bold">
-                Verified
-              </span>
-            )}
-            {event.audience && event.audience !== "everyone" && (
-              <span className="text-[9px] uppercase tracking-wider bg-zinc-100 dark:bg-zinc-800/60 text-zinc-650 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700/30 px-2 py-0.5 rounded-md font-bold">
-                {event.audience === "young_adults" ? "Young Adults" : event.audience}
-              </span>
-            )}
           </div>
 
-          <div className="mt-3.5 bg-stone-50 dark:bg-zinc-950/40 border border-stone-200 dark:border-white/5 rounded-xl p-3 flex flex-col gap-2">
-            <div className="flex items-center gap-2.5 text-xs font-semibold text-stone-700 dark:text-zinc-200">
-              <Calendar className="w-4 h-4 text-rose-600 dark:text-rose-450 shrink-0" />
-              <span>
-                {formatDate(event.startDateTime)} at {formatTime(event.startDateTime)}
-              </span>
+          <div className="flex items-start gap-2 text-sm text-muted-foreground">
+            <MapPin className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
+            <span className="line-clamp-1">
+              {event.locationName || event.address}
+              {event.city && `, ${event.city}`}
+            </span>
+          </div>
+
+          {event.rsvpCount !== undefined && event.rsvpCount > 0 && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Users className="w-4 h-4 text-muted-foreground shrink-0" />
+              <span>{event.rsvpCount} attending</span>
             </div>
-            {event.locationName && (
-              <div className="flex items-start gap-2.5 text-xs text-stone-600 dark:text-zinc-300">
-                <User className="w-4 h-4 text-rose-600 dark:text-rose-450 shrink-0 mt-0.5" />
-                <span className="line-clamp-1">{event.hostName || "Community Host"}</span>
-              </div>
-            )}
-          </div>
-
-          <div className="mt-3 flex items-start gap-1.5 text-stone-500 dark:text-zinc-400">
-            <MapPin className="w-3.5 h-3.5 mt-0.5 shrink-0 text-stone-400 dark:text-zinc-500" />
-            <span className="text-xs leading-snug">
-              {event.locationName ? `${event.locationName}, ` : ""}{event.city || event.address}
-            </span>
-          </div>
+          )}
         </div>
 
-        {/* Action Button Row */}
-        <div className="pt-2 border-t border-stone-100 dark:border-white/5 flex gap-2">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggleRsvp(e);
-            }}
-            className={`flex-1 py-1.5 px-3 text-xs font-bold rounded-xl border transition-all duration-350 flex items-center justify-center gap-1 active:scale-[0.98] ${
-              isRsvpd
-                ? "bg-rose-100 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-900/35 hover:bg-rose-200 dark:hover:bg-rose-900/50"
-                : "bg-rose-900 hover:bg-rose-800 text-white border-rose-800/20 shadow-sm hover:shadow"
-            }`}
-          >
-            {isRsvpd ? "RSVP'd" : "RSVP"}
-          </button>
-          
+        {/* Actions */}
+        <div className="mt-auto pt-4 flex gap-2">
+          {event.externalUrl ? (
+            <a
+              href={event.externalUrl}
+              target="_blank"
+              rel="noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-4 text-sm font-semibold bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 active:scale-[0.98] transition-all"
+            >
+              <span>RSVP</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+          ) : (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleRsvp(e);
+              }}
+              className={`flex-1 py-2.5 px-4 text-sm font-semibold rounded-xl transition-all active:scale-[0.98] ${
+                isRsvpd
+                  ? "bg-primary/10 text-primary border border-primary/20"
+                  : "bg-primary text-primary-foreground"
+              }`}
+            >
+              {isRsvpd ? "Going" : "RSVP"}
+            </button>
+          )}
+
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -177,42 +191,12 @@ export function EventCard({ event, isSaved, onToggleSave, isRsvpd, onToggleRsvp,
                 onClick();
               }
             }}
-            className="py-1.5 px-3 bg-stone-100 hover:bg-stone-200 dark:bg-zinc-900/60 dark:hover:bg-zinc-800/80 border border-stone-200 dark:border-white/5 hover:border-rose-450 dark:hover:border-rose-900/30 text-stone-750 dark:text-zinc-200 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1"
+            className="py-2.5 px-4 text-sm font-semibold bg-secondary text-secondary-foreground border border-border rounded-xl hover:bg-muted active:scale-[0.98] transition-all"
           >
             Details
           </button>
-          
-          <a
-            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((event.locationName ? event.locationName + ", " : "") + event.address + ", " + (event.city || ""))}`}
-            target="_blank"
-            rel="noreferrer"
-            onClick={(e) => e.stopPropagation()}
-            className="p-1.5 bg-stone-100 dark:bg-zinc-900/60 hover:bg-rose-50 dark:hover:bg-rose-950/20 text-stone-500 dark:text-zinc-400 hover:text-rose-600 border border-stone-200 dark:border-white/5 rounded-xl transition-all"
-            title="Directions"
-          >
-            <CornerUpRight className="w-4 h-4" />
-          </a>
-
-          <a
-            href={getGoogleCalendarUrl(event)}
-            target="_blank"
-            rel="noreferrer"
-            onClick={(e) => e.stopPropagation()}
-            className="p-1.5 bg-stone-100 dark:bg-zinc-900/60 hover:bg-rose-50 dark:hover:bg-rose-950/20 text-stone-500 dark:text-zinc-400 hover:text-rose-600 border border-stone-200 dark:border-white/5 rounded-xl transition-all"
-            title="Add to Calendar"
-          >
-            <Calendar className="w-4 h-4" />
-          </a>
-
-          <button
-            onClick={handleShare}
-            className="p-1.5 bg-stone-100 dark:bg-zinc-900/60 hover:bg-rose-50 dark:hover:bg-rose-950/20 text-stone-500 dark:text-zinc-400 hover:text-rose-600 border border-stone-200 dark:border-white/5 rounded-xl transition-all"
-            title="Share"
-          >
-            <Share2 className="w-4 h-4" />
-          </button>
         </div>
       </div>
-    </div>
+    </article>
   );
 }
